@@ -33,5 +33,21 @@ Then, using `WarpPlusKeyGenerator(quantity, showMsgInfo = false, maxRetry = 0)` 
 }
 ```
 
+You can use `.map((key) => { return key.licenseCode }).join("\n")` to obtain a list of keys similar to the following format:
+```
+A9bl284M-C6F8l92V-283LQ0oA
+SCg3089f-a1MT9u52-sy1qI739
+uT890z1k-3WMF8L57-c38mf2B4
+I18o7e0s-9fQW386M-N451h8Bn
+3V7U21nx-3s2l58nC-lXk684W0
+m35oj60h-9y648jUE-F4v6C78i
+O306n7Jc-0V791uTe-8vh7B1L9
+71G5Lq2O-5w182orS-T415W0Bg
+GH701hg8-04p1k8AX-1N25ys4j
+3e1v56wN-87p5m6Jf-92Rgiv17
+9GY4F15i-g19d5t6V-59E1VKI8
+769c2sSL-bZj971V8-k2VuW071
+```
+
 ## Stargazers over time
 ![Stargazers over time](https://starchart.cc/cmd1152/WarpPlusKeyGenerator-NG-lib.svg?variant=adaptive)
