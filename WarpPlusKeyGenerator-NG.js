@@ -42,72 +42,75 @@ function getRandomItemFromArray(arr) {
 }
 function register_single() {
   return new Promise((resolve, reject) => {
-    const client = http2.connect('https://api.cloudflareclient.com');
-    const req = client.request({
-      ':path': '/v0a2223/reg',
-      ':method': 'POST',
-      ...WARP_CLIENT_HEADERS
-    })
-    let data = '';
-    req.on('data', (chunk) => {
-      data += chunk;
-    });
-    req.on('end', () => {
-      let json = data?JSON.parse(data):{account:{}};
-
-      let user_id = json.id;
-      let license_code = json.account.license;
-      let token = json.token;
-
-      resolve({
-        user_id,
-        license_code,
-        token
+    try {
+      const client = http2.connect('https://api.cloudflareclient.com');
+      const req = client.request({
+        ':path': '/v0a2223/reg',
+        ':method': 'POST',
+        ...WARP_CLIENT_HEADERS
       })
-    });
-    req.on('error', (error) => {
-      reject(error);
-    });
-    req.end();
+      let data = '';
+      req.on('data', (chunk) => {
+        data += chunk;
+      });
+      req.on('end', () => {
+        let json = data?JSON.parse(data):{account:{}};
+
+        let user_id = json.id;
+        let license_code = json.account.license;
+        let token = json.token;
+
+        resolve({
+          user_id,
+          license_code,
+          token
+        })
+      });
+      req.on('error', (error) => {
+        reject(error);
+      });
+      req.end();
+    } catch (e) { reject(e) }
   })
 }
 
+
 function generate_key(base_key, debug) {
   return new Promise(async (resolve, reject) => {
-    let stop = false;
+    let client;
     let timeout = setTimeout(() => {
-      stop = true;
-      reject(new Error('Timed out'))
+      if (client) client.close();
+      reject(new Error('Timed out'));
     }, 60*1000)
     try {
       // i don't hvae any more good idea, so i use more if (stop) ...
-      const client = http2.connect('https://api.cloudflareclient.com');
-      if (stop) return;
+      client = http2.connect('https://api.cloudflareclient.com');
+ 
       if (debug) console.log("Registering User 1...");
       const user1 = await register_single();
-      if (stop) return;
+
       if (debug) console.log("Registering User 2...");
       const user2 = await register_single();
-      if (stop) return;
+
       if (debug) console.log("Referring U2 -> U1");
       await sendPatchRequest(client, user1, user2);
-      if (stop) return;
+
       if (debug) console.log("Removing U2");
       await sendDeleteRequest(client, user2);
-      if (stop) return;
+
       if (debug) console.log("Referring BaseKey -> U1");
       await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: base_key });
-      if (stop) return;
+
       if (debug) console.log("Referring U1");
       await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: user1.license_code });
-      if (stop) return;
+
       if (debug) console.log("Getting account details");
       const accountInfo = await sendGetRequest(client, user1);
-      if (stop) return;
+
       if (debug) console.log("Removing U1");
       await sendDeleteRequest(client, user1);
-      if (stop) return;
-      client.close();
+ 
+      if (client) client.close();
       clearTimeout(timeout);
  
       resolve({
@@ -116,107 +119,115 @@ function generate_key(base_key, debug) {
         licenseCode: accountInfo.license,
       });
     } catch (err) {
-      reject(err)
+      if (client) client.close();
+      clearTimeout(timeout);
+      reject(err);
     }
   })
 }
-
 function sendPatchRequest(client, user1, user2) {
   return new Promise((resolve, reject) => {
-    const patchRequest = client.request({
-      ':method': 'PATCH',
-      ':path': `/v0a2223/reg/${user1.user_id}`,
-      ...get_auth_headers(user1.token),
-      ...WARP_CLIENT_HEADERS
-    });
-    patchRequest.setEncoding('utf8');
-    patchRequest.end(JSON.stringify({ referrer: user2.user_id }));
+    try {
+      const patchRequest = client.request({
+        ':method': 'PATCH',
+        ':path': `/v0a2223/reg/${user1.user_id}`,
+        ...get_auth_headers(user1.token),
+        ...WARP_CLIENT_HEADERS
+      });
+      patchRequest.setEncoding('utf8');
+      patchRequest.end(JSON.stringify({ referrer: user2.user_id }));
 
-    patchRequest.on('response', () => {
-      resolve();
-    });
+      patchRequest.on('response', () => {
+        resolve();
+      });
     
-    patchRequest.on('error', (error) => {
+      patchRequest.on('error', (error) => {
       reject(error);
-    });
-
+      });
+    } catch (e) { reject(e) }
   });
 }
 
 function sendDeleteRequest(client, user) {
   return new Promise((resolve, reject) => {
-    const deleteRequest = client.request({
-      ':method': 'DELETE',
-      ':path': `/v0a2223/reg/${user.user_id}`,
-      ...get_auth_headers_get(user.token),
-      ...WARP_CLIENT_HEADERS
-    });
-    deleteRequest.end();
+    try {
+      const deleteRequest = client.request({
+        ':method': 'DELETE',
+        ':path': `/v0a2223/reg/${user.user_id}`,
+        ...get_auth_headers_get(user.token),
+        ...WARP_CLIENT_HEADERS
+      });
+      deleteRequest.end();
     
-    deleteRequest.on('response', () => {
-      resolve();
-    });
+      deleteRequest.on('response', () => {
+        resolve();
+      });
     
-    deleteRequest.on('error', (error) => {
-      reject(error);
-    });
+      deleteRequest.on('error', (error) => {
+        reject(error);
+      });
+    } catch (e) { reject(e) }
   });
 }
 
 function sendPutRequest(client, user, path, body) {
   return new Promise((resolve, reject) => {
-    const putRequest = client.request({
-      ':method': 'PUT',
-      ':path': path,
-      ...get_auth_headers(user.token),
-      ...WARP_CLIENT_HEADERS
-    });
-    putRequest.end(JSON.stringify(body));
+    try {
+      const putRequest = client.request({
+        ':method': 'PUT',
+        ':path': path,
+        ...get_auth_headers(user.token),
+        ...WARP_CLIENT_HEADERS
+      });
+      putRequest.end(JSON.stringify(body));
     
-    putRequest.on('response', () => {
-      resolve();
-    });
+      putRequest.on('response', () => {
+        resolve();
+      });
     
-    putRequest.on('error', (error) => {
-      reject(error);
-    });
+      putRequest.on('error', (error) => {
+        reject(error);
+      });
+    } catch (e) { reject(e) }
   });
 }
 
 function sendGetRequest(client, user) {
   return new Promise((resolve, reject) => {
-    const getRequest = client.request({
-      ':method': 'GET',
-      ':path': `/v0a2223/reg/${user.user_id}/account`,
-      ...get_auth_headers_get(user.token),
-      ...WARP_CLIENT_HEADERS
-    });
+    try {
+      const getRequest = client.request({
+        ':method': 'GET',
+        ':path': `/v0a2223/reg/${user.user_id}/account`,
+        ...get_auth_headers_get(user.token),
+        ...WARP_CLIENT_HEADERS
+      });
     
-    getRequest.setEncoding('utf8');
-    let responseData = '';
+      getRequest.setEncoding('utf8');
+      let responseData = '';
     
-    getRequest.on('data', (chunk) => {
-      responseData += chunk;
-    });
+      getRequest.on('data', (chunk) => {
+        responseData += chunk;
+      });
     
-    getRequest.on('end', () => {
-      try {
-        const responseJson = JSON.parse(responseData);
-        resolve({
-          account_type: responseJson.account_type,
-          referral_count: responseJson.referral_count,
-          license: responseJson.license,
-        });
-      } catch (error) {
+      getRequest.on('end', () => {
+        try {
+          const responseJson = JSON.parse(responseData);
+          resolve({
+            account_type: responseJson.account_type,
+            referral_count: responseJson.referral_count,
+            license: responseJson.license,
+          });
+        } catch (error) {
+          reject(error);
+        }
+      });
+    
+      getRequest.on('error', (error) => {
         reject(error);
-      }
-    });
+      });
     
-    getRequest.on('error', (error) => {
-      reject(error);
-    });
-    
-    getRequest.end();
+      getRequest.end();
+    } catch (e) { reject(e) }
   });
 }
 
@@ -224,27 +235,34 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function cli(num, debug) {
+async function cli(num, debug, maxretry) {
   const keys = [];
 
   for (let i = 1; i <= num; i++) {
     let sleepTime = 30;
-    try {
-      const key = await generate_key(getRandomItemFromArray(BASE_KEYS), debug);
-      keys.push(key);
-    } catch (error) {
-      if (debug) console.log(error);
+    let retry = 0;
+    while(true) {
+      try {
+        const key = await generate_key(getRandomItemFromArray(BASE_KEYS), debug);
+        keys.push(key);
+        break;
+      } catch (error) {
+        if (debug) console.log(error);
+        retry += 1;
+        if (retry > maxretry) break;
+      }
+      await sleep(sleepTime * 1000);
     }
-    await sleep(sleepTime * 1000);
   }
 
   return keys;
 }
 
-async function createKeys(n=1, debug=false) {
+async function createKeys(n=1, debug=false, mr = 0) {
   let num = parseInt(n);
-  if (n && n > 0) {
-    return await cli(num, debug);
+  let maxretry = parseInt(mr);
+  if (num && num > 0 && maxretry+'' && maxretry >= 0) {
+    return await cli(num, debug, maxretry);
   } else return [];
 }
 

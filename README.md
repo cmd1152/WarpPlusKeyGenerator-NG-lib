@@ -23,7 +23,7 @@ Download WarpPlusKeyGenerator-NG.js and place it into your project, it's as simp
 const WarpPlusKeyGenerator = require('./WarpPlusKeyGenerator-NG.js');
 ```
 
-Then, using `WarpPlusKeyGenerator(quantity, showMsgInfo = false)` allows you to fetch a specified number of keys. Normally, the function retrieves each key within an average time of less than 1 minute. This function returns a promise. Upon awaiting this promise, you will receive an array composed of objects structured like this:
+Then, using `WarpPlusKeyGenerator(quantity, showMsgInfo = false, maxRetry = 0)` allows you to fetch a specified number of keys. Normally, the function retrieves each key within an average time of less than 1 minute. This function returns a promise. Upon awaiting this promise, you will receive an array composed of objects structured like this:
 
 ```
 {
