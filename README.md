@@ -32,3 +32,6 @@ Then, using `WarpPlusKeyGenerator(quantity, showMsgInfo = false)` allows you to 
   licenseCode: 'mrLY4576-Eo498zQ3-08d19VFC'
 }
 ```
+
+## Stargazers over time
+![Stargazers over time](https://starchart.cc/cmd1152/WarpPlusKeyGenerator-NG-lib.svg?variant=adaptive)
