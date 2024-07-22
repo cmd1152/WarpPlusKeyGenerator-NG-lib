@@ -53,7 +53,7 @@ function register_single() {
       data += chunk;
     });
     req.on('end', () => {
-      let json = JSON.parse(data);
+      let json = data?JSON.parse(data):{account:{}};
 
       let user_id = json.id;
       let license_code = json.account.license;
@@ -72,42 +72,53 @@ function register_single() {
   })
 }
 
-async function generate_key(base_key, debug) {
-  let timeout = setTimeout(() => {
-    throw new Error("Timed out")
-  }, 60*1000)
-  const client = http2.connect('https://api.cloudflareclient.com');
-
-  if (debug) console.log("Registering User 1...");
-  const user1 = await register_single();
-  if (debug) console.log("Registering User 2...");
-  const user2 = await register_single();
-
-  if (debug) console.log("Referring U2 -> U1");
-  await sendPatchRequest(client, user1, user2);
-    
-  if (debug) console.log("Removing U2");
-  await sendDeleteRequest(client, user2);
-    
-  if (debug) console.log("Referring BaseKey -> U1");
-  await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: base_key });
-  if (debug) console.log("Referring U1");
-  await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: user1.license_code });
-    
-  if (debug) console.log("Getting account details");
-  const accountInfo = await sendGetRequest(client, user1);
-    
-  if (debug) console.log("Removing U1");
-  await sendDeleteRequest(client, user1);
-    
-  client.close();
-  clearTimeout(timeout);
-
-  return {
-    accountType: accountInfo.account_type,
-    referralCount: accountInfo.referral_count,
-    licenseCode: accountInfo.license,
-  };
+function generate_key(base_key, debug) {
+  return new Promise(async (resolve, reject) => {
+    let stop = false;
+    let timeout = setTimeout(() => {
+      stop = true;
+      reject(new Error('Timed out'))
+    }, 60*1000)
+    try {
+      // i don't hvae any more good idea, so i use more if (stop) ...
+      const client = http2.connect('https://api.cloudflareclient.com');
+      if (stop) return;
+      if (debug) console.log("Registering User 1...");
+      const user1 = await register_single();
+      if (stop) return;
+      if (debug) console.log("Registering User 2...");
+      const user2 = await register_single();
+      if (stop) return;
+      if (debug) console.log("Referring U2 -> U1");
+      await sendPatchRequest(client, user1, user2);
+      if (stop) return;
+      if (debug) console.log("Removing U2");
+      await sendDeleteRequest(client, user2);
+      if (stop) return;
+      if (debug) console.log("Referring BaseKey -> U1");
+      await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: base_key });
+      if (stop) return;
+      if (debug) console.log("Referring U1");
+      await sendPutRequest(client, user1, `/v0a2223/reg/${user1.user_id}/account`, { license: user1.license_code });
+      if (stop) return;
+      if (debug) console.log("Getting account details");
+      const accountInfo = await sendGetRequest(client, user1);
+      if (stop) return;
+      if (debug) console.log("Removing U1");
+      await sendDeleteRequest(client, user1);
+      if (stop) return;
+      client.close();
+      clearTimeout(timeout);
+ 
+      resolve({
+        accountType: accountInfo.account_type,
+        referralCount: accountInfo.referral_count,
+        licenseCode: accountInfo.license,
+      });
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 function sendPatchRequest(client, user1, user2) {
@@ -218,17 +229,13 @@ async function cli(num, debug) {
 
   for (let i = 1; i <= num; i++) {
     let sleepTime = 30;
-
-    while (true) {
-      try {
-        const key = await generate_key(getRandomItemFromArray(BASE_KEYS), debug);
-        keys.push(key);
-        break;
-      } catch (error) {
-        if (debug) console.log(error);
-      }
-      await sleep(sleepTime * 1000);
+    try {
+      const key = await generate_key(getRandomItemFromArray(BASE_KEYS), debug);
+      keys.push(key);
+    } catch (error) {
+      if (debug) console.log(error);
     }
+    await sleep(sleepTime * 1000);
   }
 
   return keys;
