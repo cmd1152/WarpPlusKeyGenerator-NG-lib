@@ -9,6 +9,7 @@
 
 const http2 = require('http2');
 const BASE_KEYS = [
+  // 0x24a's keys, do not abuse uwu
   "a6p7K2e0-Z7ej890B-T12p8vb7",
   "56Rt0O2S-6XF74gq0-8F127pKj",
   "751xJA0Z-x4N6J7k1-i1C5I87e",
@@ -19,7 +20,22 @@ const BASE_KEYS = [
   "58o1A9hB-9wb142nS-0896mkFi",
   "70I4JrU6-25Y4HAt1-53gIt84u",
   "7348MJEz-75d3Q9Js-71HFM6I4",
-]  // 0x24a's keys, do not abuse uwu
+  // cmd1152's keys, do not abuse uwu
+  "A9bl284M-C6F8l92V-283LQ0oA",
+  "SCg3089f-a1MT9u52-sy1qI739",
+  "uT890z1k-3WMF8L57-c38mf2B4",
+  "I18o7e0s-9fQW386M-N451h8Bn",
+  "3V7U21nx-3s2l58nC-lXk684W0",
+  "m35oj60h-9y648jUE-F4v6C78i",
+  "O306n7Jc-0V791uTe-8vh7B1L9",
+  "71G5Lq2O-5w182orS-T415W0Bg",
+  "GH701hg8-04p1k8AX-1N25ys4j",
+  "3e1v56wN-87p5m6Jf-92Rgiv17",
+  "9GY4F15i-g19d5t6V-59E1VKI8",
+  "769c2sSL-bZj971V8-k2VuW071",
+  "mrLY4576-Eo498zQ3-08d19VFC",
+  "9f1Nk34p-m89Vi5a3-5139Izks",
+]
 
 const WARP_CLIENT_HEADERS = {
   "CF-Client-Version": "a-6.11-2223",
