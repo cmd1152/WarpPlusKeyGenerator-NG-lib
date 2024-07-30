@@ -10,16 +10,16 @@
 const http2 = require('http2');
 const BASE_KEYS = [
   // 0x24a's keys, do not abuse uwu
-  "a6p7K2e0-Z7ej890B-T12p8vb7",
-  "56Rt0O2S-6XF74gq0-8F127pKj",
-  "751xJA0Z-x4N6J7k1-i1C5I87e",
-  "t6u13bA9-Dj926li0-7XUr05s8",
-  "YUK9l850-ZO2K164I-92d35NIy",
-  "Z9Jnd751-C078ocv6-8n341Kse",
-  "39U0YG1q-d5KyB312-0Hnw596J",
-  "58o1A9hB-9wb142nS-0896mkFi",
-  "70I4JrU6-25Y4HAt1-53gIt84u",
-  "7348MJEz-75d3Q9Js-71HFM6I4",
+  "578Ko2xd-36K7DMX2-4V812ame",
+  "94lB36du-4960HEzs-68E5jd3I",
+  "28R1r9iF-6Li9Kq27-U514Yx8l",
+  "k18ba35e-5whgj679-8Pi34nI2",
+  "3MqFO712-DL4Q678q-5R6DN2z0",
+  "2F05CD1P-7CJ0g2I5-B3hO4b56",
+  "68y15EAJ-C3519JfR-zve6847x",
+  "7I8n60ds-Chy26D57-5W21IFH8",
+  "U4C071LW-JhT604K8-3a6s27uT",
+  "aAsQ1072-fy983J0c-r432m6ZG",
   // cmd1152's keys, do not abuse uwu
   "A9bl284M-C6F8l92V-283LQ0oA",
   "SCg3089f-a1MT9u52-sy1qI739",
